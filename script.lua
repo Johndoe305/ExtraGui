@@ -10,6 +10,7 @@ local RS = game:GetService("ReplicatedStorage")
 local COR_BG         = Color3.fromRGB(15, 15, 25)
 local COR_BG_ATIVO   = Color3.fromRGB(30, 40, 60)
 local COR_FUNDO      = Color3.fromRGB(10, 10, 20)
+local COR_BORDA      = Color3.fromRGB(0, 0, 0)
 local COR_TITULO     = Color3.fromRGB(200, 220, 255)
 local COR_KILL       = Color3.fromRGB(255, 80, 80)
 local COR_WATER      = Color3.fromRGB(80, 180, 255)
@@ -23,11 +24,10 @@ local t2 = nil
 local fluidos = {8, 9, 10, 11}
 local IDInfo = require(RS:WaitForChild("IDInfo"))
 
--- ⭐ Debounce (trava)
 local killProcessando = false
 local waterProcessando = false
 
--- ⭐ Guarda os valores originais
+-- ⭐ Backup
 local backupIDInfo = {}
 for _, id in ipairs(fluidos) do
     if IDInfo[id] then
@@ -37,8 +37,6 @@ for _, id in ipairs(fluidos) do
         }
     end
 end
-
--- ⭐ Guarda as tabelas modificadas (pra restaurar)
 local tabelasBackup = {}
 
 --// FUNCTIONS
@@ -96,7 +94,7 @@ local function iniciarKillAura()
     killRodando = true
     task.spawn(function()
         while killRodando do
-            task.wait(0.5)
+            task.wait(0.2)
             if not killRodando then break end
             if not entity then entity = findLocalEntity(10) end
             if not t2 then t2 = findT2(10) end
@@ -139,8 +137,6 @@ local function iniciarKillAura()
                         ieat = false, ieaten = false, iswing = false, isit = false,
                         ijump = false, icraft = false, ibroken = false, Fell = 0, Sneak = false,
                     })
-                else
-                    print("❌ Nenhum mob a 10 studs")
                 end
             end
         end
@@ -151,9 +147,7 @@ local function pararKillAura()
     killRodando = false
 end
 
--- ⭐ ATIVAR WATER (guarda backup)
 local function ativarWater()
-    -- Guarda o IDInfo original
     for _, id in ipairs(fluidos) do
         if IDInfo[id] then
             backupIDInfo[id] = {
@@ -165,7 +159,6 @@ local function ativarWater()
         end
     end
     
-    -- Guarda as tabelas e modifica
     tabelasBackup = {}
     for _, func in ipairs(getgc()) do
         if type(func) == "function" then
@@ -191,9 +184,7 @@ local function ativarWater()
     print("🌊 Walk On Water ATIVADO!")
 end
 
--- ⭐ DESATIVAR WATER (restaura backup)
 local function desativarWater()
-    -- Restaura o IDInfo
     for _, id in ipairs(fluidos) do
         if IDInfo[id] and backupIDInfo[id] then
             IDInfo[id].fluid = backupIDInfo[id].fluid
@@ -201,7 +192,6 @@ local function desativarWater()
         end
     end
     
-    -- Restaura as tabelas
     for _, backup in ipairs(tabelasBackup) do
         for _, id in ipairs(fluidos) do
             if backup.tabela[id] == nil then
@@ -210,7 +200,7 @@ local function desativarWater()
         end
     end
     tabelasBackup = {}
-    print("🌊 Walk On Water DESATIVADO (água/lava restauradas)")
+    print("🌊 Walk On Water DESATIVADO (restaurado)")
 end
 
 --// GUI
@@ -228,6 +218,10 @@ main.Parent = gui
 main.Active = true
 main.BorderSizePixel = 0
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
+
+local mainStroke = Instance.new("UIStroke", main)
+mainStroke.Color = COR_BORDA
+mainStroke.Thickness = 2
 
 local title = Instance.new("TextLabel", main)
 title.Size = UDim2.new(1, 0, 0, 30)
@@ -251,10 +245,10 @@ local function createButton(text, cor)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, 0, 0, 36)
     btn.Text = text
-    btn.BackgroundColor3 = COR_BG
+    btn.BackgroundColor3 = COR_BG  -- ⭐ fundo escuro (OFF)
     btn.Font = Enum.Font.GothamBold
     btn.TextSize = 12
-    btn.TextColor3 = cor
+    btn.TextColor3 = cor  -- ⭐ texto colorido
     btn.BorderSizePixel = 0
     btn.AutoButtonColor = false
     btn.TextStrokeTransparency = 0
@@ -267,60 +261,58 @@ end
 -- ⚔️ KILL AURA
 local btnKill = createButton("⚔️ KILL AURA: OFF", COR_KILL)
 btnKill.Activated:Connect(function()
-    -- ⭐ Se já tá processando, ignora
     if killProcessando then return end
     killProcessando = true
     
     if killAtivo then
         killAtivo = false
-        btnKill.Text = "⏳ DISABLING..."
+        btnKill.Text = "⏳ DESATIVANDO..."
+        -- ⭐ Fundo escuro (OFF)
         btnKill.BackgroundColor3 = COR_BG
         task.wait(1)
         pararKillAura()
         btnKill.Text = "⚔️ KILL AURA: OFF"
-        print("⚔️ Kill Aura DESATIVADO")
+        -- ⭐ Texto volta ao normal
+        btnKill.TextColor3 = COR_KILL
     else
         killAtivo = true
-        btnKill.Text = "⏳  ENABLING..."
-        btnKill.BackgroundColor3 = COR_BG_ATIVO
+        btnKill.Text = "⏳ ATIVANDO..."
         task.wait(1)
         iniciarKillAura()
         btnKill.Text = "⚔️ KILL AURA: ON"
-        btnKill.BackgroundColor3 = Color3.fromRGB(60, 25, 25)
-        print("⚔️ Kill Aura ATIVADO")
+        -- ⭐ Fundo ativo (ON)
+        btnKill.BackgroundColor3 = COR_BG_ATIVO
+        -- ⭐ Texto continua colorido
+        btnKill.TextColor3 = COR_KILL
     end
     
-    -- ⭐ Libera o clique
     killProcessando = false
 end)
 
 -- 🌊 WALK ON WATER
 local btnWater = createButton("🌊 WALK ON WATER: OFF", COR_WATER)
 btnWater.Activated:Connect(function()
-    -- ⭐ Se já tá processando, ignora
     if waterProcessando then return end
     waterProcessando = true
     
     if waterAtivo then
         waterAtivo = false
-        btnWater.Text = "⏳ DISABLING..."
+        btnWater.Text = "⏳ DESATIVANDO..."
         btnWater.BackgroundColor3 = COR_BG
         task.wait(1)
         desativarWater()
         btnWater.Text = "🌊 WALK ON WATER: OFF"
-        print("🌊 Walk On Water DESATIVADO")
+        btnWater.TextColor3 = COR_WATER
     else
         waterAtivo = true
-        btnWater.Text = "⏳ ENABLING..."
-        btnWater.BackgroundColor3 = COR_BG_ATIVO
+        btnWater.Text = "⏳ ATIVANDO..."
         task.wait(1)
         ativarWater()
         btnWater.Text = "🌊 WALK ON WATER: ON"
-        btnWater.BackgroundColor3 = Color3.fromRGB(25, 40, 70)
-        print("🌊 Walk On Water ATIVADO")
+        btnWater.BackgroundColor3 = COR_BG_ATIVO
+        btnWater.TextColor3 = COR_WATER
     end
     
-    -- ⭐ Libera o clique
     waterProcessando = false
 end)
 
