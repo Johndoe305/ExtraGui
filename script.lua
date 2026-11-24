@@ -10,7 +10,6 @@ local RS = game:GetService("ReplicatedStorage")
 local COR_BG         = Color3.fromRGB(15, 15, 25)
 local COR_BG_ATIVO   = Color3.fromRGB(30, 40, 60)
 local COR_FUNDO      = Color3.fromRGB(10, 10, 20)
-local COR_BORDA      = Color3.fromRGB(0, 0, 0)
 local COR_TITULO     = Color3.fromRGB(200, 220, 255)
 local COR_KILL       = Color3.fromRGB(255, 80, 80)
 local COR_WATER      = Color3.fromRGB(80, 180, 255)
@@ -222,17 +221,13 @@ gui.IgnoreGuiInset = true
 gui.Parent = guiParent
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 220, 0, 250)
+main.Size = UDim2.new(0, 220, 0, 150)
 main.Position = UDim2.new(0.5, -110, 0.4, -125)
 main.BackgroundColor3 = COR_FUNDO
 main.Parent = gui
 main.Active = true
 main.BorderSizePixel = 0
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
-
-local mainStroke = Instance.new("UIStroke", main)
-mainStroke.Color = COR_BORDA
-mainStroke.Thickness = 2
 
 local title = Instance.new("TextLabel", main)
 title.Size = UDim2.new(1, 0, 0, 30)
@@ -278,7 +273,7 @@ btnKill.Activated:Connect(function()
     
     if killAtivo then
         killAtivo = false
-        btnKill.Text = "⏳ DESATIVANDO..."
+        btnKill.Text = "⏳ DISABLING..."
         btnKill.BackgroundColor3 = COR_BG
         task.wait(1)
         pararKillAura()
@@ -286,7 +281,7 @@ btnKill.Activated:Connect(function()
         print("⚔️ Kill Aura DESATIVADO")
     else
         killAtivo = true
-        btnKill.Text = "⏳ ATIVANDO..."
+        btnKill.Text = "⏳  ENABLING..."
         btnKill.BackgroundColor3 = COR_BG_ATIVO
         task.wait(1)
         iniciarKillAura()
@@ -308,7 +303,7 @@ btnWater.Activated:Connect(function()
     
     if waterAtivo then
         waterAtivo = false
-        btnWater.Text = "⏳ DESATIVANDO..."
+        btnWater.Text = "⏳ DISABLING..."
         btnWater.BackgroundColor3 = COR_BG
         task.wait(1)
         desativarWater()
@@ -316,7 +311,7 @@ btnWater.Activated:Connect(function()
         print("🌊 Walk On Water DESATIVADO")
     else
         waterAtivo = true
-        btnWater.Text = "⏳ ATIVANDO..."
+        btnWater.Text = "⏳ ENABLING..."
         btnWater.BackgroundColor3 = COR_BG_ATIVO
         task.wait(1)
         ativarWater()
